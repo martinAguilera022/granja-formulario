@@ -131,8 +131,8 @@ def guardar_datos():
     excel.Quit()
 
     print("PDF generado exitosamente.")
-    # Responde con un mensaje JSON de éxito y la ruta del archivo generado
-    return jsonify({"mensaje": "Formulario generado correctamente", "pdf": archivo_completado})
+   # Devuelve el archivo PDF generado para la descarga
+    return send_file(pdf_path, as_attachment=True, download_name="formulario_completado.pdf")
 
 
 # Punto de entrada para ejecutar la aplicación Flask
