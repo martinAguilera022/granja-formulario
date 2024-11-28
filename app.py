@@ -1,8 +1,9 @@
 # Importa Flask para crear la aplicación web y manejar rutas, render_template para cargar plantillas HTML, request para manejar datos de solicitudes, y jsonify para devolver respuestas JSON.
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template,send_file,request, jsonify
 from openpyxl import load_workbook  # Permite manipular archivos Excel (.xlsx).
 from win32com.client import Dispatch
 
+import os
 # Crea una instancia de la aplicación Flask
 app = Flask(__name__)
 
@@ -19,7 +20,7 @@ def index():
 def guardar_datos():
     # Extrae los datos enviados en formato JSON desde la solicitud
     datos = request.json
-    
+
     # Ruta del archivo de plantilla de Excel
     archivo_plantilla = 'plantilla-granja.xlsx'
 
@@ -125,14 +126,20 @@ def guardar_datos():
     archivo_completado = 'formulario_completado.xlsx'
     wb.save(archivo_completado)
 
+    # Convierte el archivo Excel en PDF usando Excel
     excel = Dispatch('Excel.Application')
     wb_obj = excel.Workbooks.Open(archivo_completado)
-    wb_obj.SaveAs('formulario_completado.pdf', FileFormat=57)
+    pdf_path = 'formulario_completado.pdf'
+    wb_obj.SaveAs(pdf_path, FileFormat=57)  # 57 es el formato PDF
     excel.Quit()
-
-    print("PDF generado exitosamente.")
-   # Devuelve el archivo PDF generado para la descarga
-    return send_file(pdf_path, as_attachment=True, download_name="formulario_completado.pdf")
+    try:
+        return send_file(pdf_path, as_attachment=True, download_name="formulario_completado.pdf")
+    finally:
+        # Elimina los archivos temporales generados (excel y pdf)
+        if os.path.exists(archivo_completado):
+            os.remove(archivo_completado)
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
 
 
 # Punto de entrada para ejecutar la aplicación Flask
